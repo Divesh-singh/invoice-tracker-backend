@@ -23,6 +23,9 @@ router.get('/', authenticationMiddleware, authorize(2), billController.getAllBil
 // Adding bill report here as its not a seprate entity yet
 router.get('/report', authenticationMiddleware, authorize(2), billController.getBillReport);
 
+// Get single bill by id (with payments)
+router.get('/:id', authenticationMiddleware, authorize(2), billController.getBillById);
+
 // Create bill 
 router.post('/', authenticationMiddleware, upload.single('image'), billController.createBill);
 
