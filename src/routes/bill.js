@@ -20,6 +20,9 @@ const upload = multer({ storage: storage });
 // Get all bills (protected, admin only)
 router.get('/', authenticationMiddleware, authorize(2), billController.getAllBills);
 
+// Adding bill report here as its not a seprate entity yet
+router.get('/report', authenticationMiddleware, authorize(2), billController.getBillReport);
+
 // Create bill 
 router.post('/', authenticationMiddleware, upload.single('image'), billController.createBill);
 

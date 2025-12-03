@@ -85,3 +85,4 @@ CREATE TABLE IF NOT EXISTS paid_bills (
 
 -- Index for report optimization
 CREATE INDEX IF NOT EXISTS idx_paid_bills_bill_id ON paid_bills(bill_id);
+CREATE INDEX IF NOT EXISTS idx_bill_created_at ON bills(created_at);

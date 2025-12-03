@@ -1,6 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const User = require('./User');
+const PaidBill = require('./PaidBill');
 
 const Bill = sequelize.define(
   'Bill',
@@ -51,7 +52,10 @@ const Bill = sequelize.define(
 );
 
 // Associations
+
 Bill.belongsTo(User, { foreignKey: 'added_by', as: 'createdBy' });
 User.hasMany(Bill, { foreignKey: 'added_by', as: 'bills' });
+
+module.exports = Bill;
 
 module.exports = Bill;
