@@ -1,7 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const User = require('./User');
-const Bill = require('./Bill');
 
 const PaidBill = sequelize.define(
   'PaidBill',
@@ -23,7 +22,7 @@ const PaidBill = sequelize.define(
       type: DataTypes.UUID,
       allowNull: false,
       references: {
-        model: Bill,
+        model: 'bills',
         key: 'id',
       },
     },
@@ -54,12 +53,5 @@ const PaidBill = sequelize.define(
     updatedAt: false,
   }
 );
-
-// Associations
-PaidBill.belongsTo(Bill, { foreignKey: 'bill_id', as: 'bill' });
-PaidBill.belongsTo(User, { foreignKey: 'added_by', as: 'createdBy' });
-
-Bill.hasMany(PaidBill, { foreignKey: 'bill_id', as: 'payments' });
-User.hasMany(PaidBill, { foreignKey: 'added_by', as: 'paidBills' });
 
 module.exports = PaidBill;

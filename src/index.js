@@ -24,6 +24,8 @@ app.use(cors({
 // Passport initialization
 app.use(passport.initialize());
 require('./config/passport');
+// Load models to initialize associations
+require('./models');
 
 // Routes
 app.use('/api/auth', authRoutes);

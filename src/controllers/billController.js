@@ -1,6 +1,9 @@
 const Bill = require('../models/Bill');
 const PaidBill = require('../models/PaidBill');
 const { uploadFileToBucket } = require('../services/gcpFileUploadService');
+const { Op } = require('sequelize');
+
+
 
 
 const billController = {
@@ -10,6 +13,48 @@ const billController = {
             return res.status(200).json({ bills });
         } catch (error) {
             return res.status(500).json({ message: 'Failed to retrieve users', error: error.message });
+        }
+    },
+
+    getBillReport: async (req, res) => {
+        try {
+            const { startTime, endTime } = req.query;
+            if (!startTime || !endTime) {
+                return res.status(400).json({ message: 'Start and end time are required' });
+            }
+
+            const convertedStartTime = new Date(startTime);
+            const convertedEndTime = new Date(endTime);
+
+            if (isNaN(convertedStartTime) || isNaN(convertedEndTime)) {
+                return res.status(400).json({ message: 'Invalid date format' });
+            }
+
+            // Query bills within the time interval with associated payments
+            const billData = await Bill.findAll({
+                where: {
+                    created_at: {
+                        [Op.between]: [convertedStartTime, convertedEndTime]
+                    }
+                },
+                include: [{
+                    model: PaidBill,
+                    as: 'payments',
+                    required: false,
+                    attributes: ['id', 'name', 'description', 'amount_received', 'payment_invoice_url', 'created_at']
+                }],
+                order: [['created_at', 'DESC']]
+            });
+
+            return res.status(200).json({ 
+                message: 'Bill report retrieved successfully', 
+                startTime: convertedStartTime,
+                endTime: convertedEndTime,
+                billCount: billData.length,
+                billData 
+            });
+        } catch (error) {
+            return res.status(500).json({ message: 'Failed to generate bill report', error: error.message });
         }
     },
 
