@@ -5,6 +5,7 @@ const cors = require('cors');
 const passport = require('passport');
 const sequelize = require('./config/database');
 const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/user');
 const { PORT } = require('./config/constants');
 
 // Initialize Express app
@@ -25,6 +26,7 @@ require('./config/passport');
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 
 // Health check route
 app.get('/health', (req, res) => {

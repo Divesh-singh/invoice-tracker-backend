@@ -18,13 +18,14 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE TABLE IF NOT EXISTS user_type (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(50) NOT NULL UNIQUE,
-    access_level INT NOT NULL CHECK (access_level IN (1, 2))
+    access_level INT NOT NULL CHECK (access_level IN (1, 2, 3))
 );
 
 -- Preload user types
 INSERT INTO user_type (id, name, access_level) VALUES
 (gen_random_uuid(), 'user', 1),
-(gen_random_uuid(), 'admin', 2);
+(gen_random_uuid(), 'admin', 2),
+(gen_random_uuid(), 'superadmin', 3);
 
 -- ============================
 -- USER TABLE
