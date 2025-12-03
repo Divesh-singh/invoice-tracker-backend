@@ -6,12 +6,12 @@ const User = require('../models/User');
 passport.use(
   new LocalStrategy(
     {
-      usernameField: 'email',
+      usernameField: 'username',
       passwordField: 'password',
     },
-    async (email, password, done) => {
+    async (username, password, done) => {
       try {
-        const user = await User.findByEmail(email);
+        const user = await User.findOne({ where: { username } });
         
         if (!user) {
           return done(null, false, { message: 'User not found' });
@@ -37,7 +37,7 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser(async (id, done) => {
   try {
-    const user = await User.findById(id);
+    const user = await User.findByPk(id);
     done(null, user);
   } catch (error) {
     done(error);

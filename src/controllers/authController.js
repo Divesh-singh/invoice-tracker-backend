@@ -1,17 +1,18 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const UserType = require('../models/UserType');
 const { JWT_SECRET, JWT_EXPIRE, COOKIE_EXPIRE } = require('../config/constants');
 
 const authController = {
   // Register new user
   register: async (req, res) => {
     try {
-      const { email, password, confirmPassword } = req.body;
+      const { firstName, lastName, username, password, confirmPassword, usertypeid } = req.body;
 
-      // Validation
-      if (!email || !password || !confirmPassword) {
-        return res.status(400).json({ message: 'Please provide email and password' });
+      // Validation for basic fields 
+      if (!firstName || !lastName || !username || !password || !confirmPassword) {
+        return res.status(400).json({ message: 'Please provide all required fields' });
       }
 
       if (password !== confirmPassword) {
@@ -19,9 +20,9 @@ const authController = {
       }
 
       // Check if user already exists
-      const existingUser = await User.findByEmail(email);
+      const existingUser = await User.findOne({ where: { username } });
       if (existingUser) {
-        return res.status(400).json({ message: 'User already exists' });
+        return res.status(400).json({ message: 'Username already exists' });
       }
 
       // Hash password
@@ -29,11 +30,17 @@ const authController = {
       const hashedPassword = await bcrypt.hash(password, salt);
 
       // Create user
-      const user = await User.create(email, hashedPassword);
+      const user = await User.create({
+        first_name: firstName,
+        last_name: lastName,
+        username,
+        password: hashedPassword,
+        usertypeid,
+      });
 
       // Generate JWT token
       const token = jwt.sign(
-        { id: user.id, email: user.email },
+        { id: user.id, username: user.username },
         JWT_SECRET,
         { expiresIn: JWT_EXPIRE }
       );
@@ -46,13 +53,14 @@ const authController = {
         maxAge: COOKIE_EXPIRE,
       });
 
-      res.status(201).json({
+      return res.status(201).json({
         message: 'User registered successfully',
-        user: { id: user.id, email: user.email },
+        user: { id: user.id, username: user.username, firstName: user.firstName, lastName: user.lastName },
         token,
       });
     } catch (error) {
-      res.status(500).json({ message: 'Registration failed', error: error.message });
+      console.error('Registration error:', error);
+      return res.status(500).json({ message: 'Registration failed', error: error.message });
     }
   },
 
@@ -63,7 +71,7 @@ const authController = {
 
       // Generate JWT token
       const token = jwt.sign(
-        { id: user.id, email: user.email },
+        { id: user.id, username: user.username },
         JWT_SECRET,
         { expiresIn: JWT_EXPIRE }
       );
@@ -76,12 +84,14 @@ const authController = {
         maxAge: COOKIE_EXPIRE,
       });
 
-      res.status(200).json({
+      return res.status(200).json({
         message: 'Login successful',
-        user: { id: user.id, email: user.email }
+        user: { id: user.id, username: user.username, firstName: user.firstName, lastName: user.lastName },
+        token,
       });
     } catch (error) {
-      res.status(500).json({ message: 'Login failed', error: error.message });
+      console.error('Login error:', error);
+      return res.status(500).json({ message: 'Login failed', error: error.message });
     }
   },
 
@@ -93,14 +103,21 @@ const authController = {
       sameSite: 'strict',
     });
 
-    res.status(200).json({ message: 'Logged out successfully' });
+    return res.status(200).json({ message: 'Logged out successfully' });
   },
 
   // Get current user
-  getCurrentUser: (req, res) => {
-    res.status(200).json({
-      user: req.user,
-    });
+  getCurrentUser: async (req, res) => {
+    try {
+      const user = await User.findByPk(req.user.id, {
+        include: { model: UserType, as: 'userType' },
+      });
+      delete user.dataValues.password; // Remove password from response
+      return res.status(200).json({ user });
+    } catch (error) {
+      console.error('Get user error:', error);
+      return res.status(500).json({ message: 'Failed to fetch user', error: error.message });
+    }
   },
 };
 

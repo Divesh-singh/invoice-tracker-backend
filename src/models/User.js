@@ -1,28 +1,51 @@
-// Mock User Model - Replace with actual database implementation
-const users = []; // In-memory storage for demo
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+const UserType = require('./UserType');
 
-class User {
-  constructor(id, email, password) {
-    this.id = id;
-    this.email = email;
-    this.password = password;
-    this.createdAt = new Date();
+const User = sequelize.define(
+  'User',
+  {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
+    first_name: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+    },
+    last_name: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+    },
+    username: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      unique: true,
+    },
+    password: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+    },
+    usertypeid: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: UserType,
+        key: 'id',
+      },
+    },
+  },
+  {
+    tableName: 'user',
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
   }
+);
 
-  static async findById(id) {
-    return users.find(u => u.id === id);
-  }
-
-  static async findByEmail(email) {
-    return users.find(u => u.email === email);
-  }
-
-  static async create(email, hashedPassword) {
-    const id = users.length + 1;
-    const user = new User(id, email, hashedPassword);
-    users.push(user);
-    return user;
-  }
-}
+// Associations
+User.belongsTo(UserType, { foreignKey: 'usertypeid', as: 'userType' });
+UserType.hasMany(User, { foreignKey: 'usertypeid', as: 'users' });
 
 module.exports = User;
