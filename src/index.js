@@ -6,6 +6,7 @@ const passport = require('passport');
 const sequelize = require('./config/database');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
+const billRoutes = require('./routes/bill');
 const { PORT } = require('./config/constants');
 
 // Initialize Express app
@@ -26,7 +27,8 @@ require('./config/passport');
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/bill', billRoutes);
 
 // Health check route
 app.get('/health', (req, res) => {
