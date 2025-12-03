@@ -46,15 +46,47 @@ const billController = {
                 order: [['created_at', 'DESC']]
             });
 
+            const totalAmountBilled = billData.reduce((sum, bill) => sum + parseFloat(bill.bill_amount), 0);
+            const totalAmountReceived = billData.reduce((sum, bill) => {
+                const billPaymentsTotal = bill.payments.reduce((paymentSum, payment) => paymentSum + parseFloat(payment.amount_received), 0);
+                return sum + billPaymentsTotal;
+            }, 0);
+            console.log(`Total Amount Billed: ${totalAmountBilled}`);
+            console.log(`Total Amount Received: ${totalAmountReceived}`);
+
             return res.status(200).json({ 
                 message: 'Bill report retrieved successfully', 
                 startTime: convertedStartTime,
                 endTime: convertedEndTime,
                 billCount: billData.length,
-                billData 
+                billData,
+                totalAmountBilled,
+                totalAmountReceived
             });
         } catch (error) {
             return res.status(500).json({ message: 'Failed to generate bill report', error: error.message });
+        }
+    },
+
+    getBillById: async (req, res) => {
+        try {
+            const { id } = req.params;
+            if (!id) return res.status(400).json({ message: 'Bill id is required' });
+
+            const bill = await Bill.findByPk(id, {
+                include: [{
+                    model: PaidBill,
+                    as: 'payments',
+                    required: false,
+                    attributes: ['id', 'name', 'description', 'amount_received', 'payment_invoice_url', 'created_at']
+                }]
+            });
+
+            if (!bill) return res.status(404).json({ message: 'Bill not found' });
+
+            return res.status(200).json({ message: 'Bill retrieved successfully', bill });
+        } catch (error) {
+            return res.status(500).json({ message: 'Failed to retrieve bill', error: error.message });
         }
     },
 
