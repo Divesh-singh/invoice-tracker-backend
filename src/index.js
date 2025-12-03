@@ -3,6 +3,7 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const passport = require('passport');
+const sequelize = require('./config/database');
 const authRoutes = require('./routes/auth');
 const { PORT } = require('./config/constants');
 
@@ -42,9 +43,22 @@ app.use((req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-});
+const startServer = async () => {
+  try {
+    // Test database connection
+    await sequelize.authenticate();
+    console.log('Database connection established.');
+
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error.message);
+    process.exit(1);
+  }
+};
+
+startServer();
 
 module.exports = app;
