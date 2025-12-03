@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 const localAuthMiddleware = require('../middleware/localAuth');
-const authMiddleware = require('../middleware/auth');
+const authenticationMiddleware = require('../middleware/authentication');
 
 // Register route
 router.post('/register', authController.register);
@@ -11,9 +11,9 @@ router.post('/register', authController.register);
 router.post('/login', localAuthMiddleware, authController.login);
 
 // Logout route (protected)
-router.post('/logout', authMiddleware, authController.logout);
+router.post('/logout', authenticationMiddleware, authController.logout);
 
 // Get current user (protected)
-router.get('/me', authMiddleware, authController.getCurrentUser);
+router.get('/me', authenticationMiddleware, authController.getCurrentUser);
 
 module.exports = router;
