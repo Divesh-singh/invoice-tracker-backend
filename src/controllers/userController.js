@@ -17,6 +17,17 @@ const userController = {
         }
     },
 
+    getAllUserTypes: async (req, res) => {
+        try {
+            const userTypes = await UserType.findAll({
+                attributes: ['id', 'name', 'access_level']
+            });
+            return res.status(200).json({ userTypes });
+        } catch (error) {
+            return res.status(500).json({ message: 'Failed to retrieve user types', error: error.message });
+        }
+    },
+
     updateUser: async (req, res) => {
         try {
             const userId = req.params.id;
