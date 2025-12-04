@@ -16,8 +16,12 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+const allowedOrigins = [
+  "https://invoice-tracker-ui.vercel.app",
+  "http://localhost:3000"
+];
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: allowedOrigins,
   credentials: true,
 }));
 
