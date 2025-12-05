@@ -30,7 +30,7 @@ router.get('/:id', authenticationMiddleware, authorize(2), billController.getBil
 router.post('/', authenticationMiddleware, upload.single('image'), billController.createBill);
 
 // // Update bill (protected, admin only)
-router.put('/payment/:id', authenticationMiddleware, authorize(2), upload.single('image'), billController.updateBill);
+router.put('/:id/payment', authenticationMiddleware, authorize(2), upload.single('image'), billController.updateBill);
 
 
 module.exports = router;

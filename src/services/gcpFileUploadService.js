@@ -29,47 +29,53 @@ const bucket = bucketName ? storage.bucket(bucketName) : null;
  * @returns {Promise<string>} public URL or gs:// URL
  */
 async function uploadFileToBucket(file, folder = 'uploads', makePublic = true) {
-	if (!bucket) throw new Error('GCP_BUCKET_NAME is not configured');
-	if (!file) throw new Error('No file provided');
+    if (!bucket) throw new Error('GCP_BUCKET_NAME is not configured');
+    if (!file) throw new Error('No file provided');
 
-	const timestamp = Date.now();
-	const originalName = (file.originalname || path.basename(file.path || 'file')).replace(/\s+/g, '_');
-	const filename = `${timestamp}-${originalName}`;
-	const destination = folder ? `${folder}/${filename}` : filename;
+    const timestamp = Date.now();
+    const originalName = (file.originalname || path.basename(file.path || 'file')).replace(/\s+/g, '_');
+    const filename = `${timestamp}-${originalName}`;
+    const destination = folder ? `${folder}/${filename}` : filename;
 
-	try {
-		const gcpFile = bucket.file(destination);
+    try {
+        const gcpFile = bucket.file(destination);
 
-		if (file.buffer) {
-			await gcpFile.save(file.buffer, {
-				resumable: false,
-				metadata: {
-					contentType: file.mimetype || 'application/octet-stream',
-				},
-			});
-		} else if (file.path) {
-			// Upload from disk
-			await bucket.upload(file.path, {
-				destination,
-				metadata: {
-					contentType: file.mimetype || 'application/octet-stream',
-				},
-			});
-		} else {
-			throw new Error('File object must contain `buffer` or `path`');
-		}
+        if (file.buffer) {
+            await gcpFile.save(file.buffer, {
+                resumable: false,
+                metadata: {
+                    contentType: file.mimetype || 'application/octet-stream',
+                },
+            });
+        } else if (file.path) {
+            await bucket.upload(file.path, {
+                destination,
+                metadata: {
+                    contentType: file.mimetype || 'application/octet-stream',
+                },
+            });
+        } else {
+            throw new Error('File object must contain `buffer` or `path`');
+        }
 
-		if (makePublic) {
-			await gcpFile.makePublic();
-			return `https://storage.googleapis.com/${bucketName}/${destination}`;
-		}
+        if (makePublic) {
+            // Generate a signed URL instead of making public
+			//Temporary workaround until proper public access is set up, currently blocked by org policy
+            const [signedUrl] = await gcpFile.getSignedUrl({
+                version: 'v4',
+                action: 'read',
+                expires: Date.now() + 7 * 24 * 60 * 60 * 1000, // 24 hours
+            });
+            return signedUrl;
+        }
 
-		return `gs://${bucketName}/${destination}`;
-	} catch (err) {
-		console.error('uploadFileToBucket error:', err);
-		throw err;
-	}
+        return `gs://${bucketName}/${destination}`;
+    } catch (err) {
+        console.error('uploadFileToBucket error:', err);
+        throw err;
+    }
 }
+
 
 /**
  * Delete a file from the GCP bucket.
