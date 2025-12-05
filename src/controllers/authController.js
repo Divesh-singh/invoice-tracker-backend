@@ -8,7 +8,7 @@ const authController = {
   // Register new user
   register: async (req, res) => {
     try {
-      const { firstName, lastName, username, password, confirmPassword, usertypeid } = req.body;
+      const { firstName, lastName, username, password, confirmPassword, userTypeId } = req.body;
 
       // Validation for basic fields 
       if (!firstName || !lastName || !username || !password || !confirmPassword) {
@@ -35,28 +35,12 @@ const authController = {
         last_name: lastName,
         username,
         password: hashedPassword,
-        usertypeid,
-      });
-
-      // Generate JWT token
-      const token = jwt.sign(
-        { id: user.id, username: user.username },
-        JWT_SECRET,
-        { expiresIn: JWT_EXPIRE }
-      );
-
-      // Set cookie
-      res.cookie('token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none',
-        maxAge: COOKIE_EXPIRE,
+        usertypeid: userTypeId,
       });
 
       return res.status(201).json({
         message: 'User registered successfully',
-        user: { id: user.id, username: user.username, firstName: user.firstName, lastName: user.lastName },
-        token,
+        user: { id: user.id, username: user.username, firstName: user.firstName, lastName: user.lastName }
       });
     } catch (error) {
       console.error('Registration error:', error);
@@ -80,7 +64,7 @@ const authController = {
       res.cookie('token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none',
+        sameSite: 'lax',
         maxAge: COOKIE_EXPIRE,
       });
 
@@ -100,7 +84,7 @@ const authController = {
     res.clearCookie('token', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
+      sameSite: 'lax',
     });
 
     return res.status(200).json({ message: 'Logged out successfully' });

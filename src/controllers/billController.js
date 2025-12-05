@@ -104,9 +104,7 @@ const billController = {
             }
             let imageUrl = null;
             if (req.file) {
-                //TODO: HANDLE ACTUAL UPLOAD TO GCP AND GET URL WHEN BUCKET IS SET UP
-                // imageUrl = await uploadFileToBucket(req.file, 'bills'); 
-                imageUrl = `https://fakeurl.com/${req.file.filename}`; // Placeholder URL
+                imageUrl = await uploadFileToBucket(req.file, 'bills'); 
             }
             if (amount_received) {
                 // create bill then mark as paid(if fully paid), also create payment record in paid_bills table
@@ -140,16 +138,15 @@ const billController = {
             if (amount_received && (isNaN(amount_received) || parseFloat(amount_received) <= 0)) {
                 return res.status(400).json({ message: 'Amount received must be a positive number' });
             }
+            
             let imageUrl = null;
             if (req.file) {
-                //TODO: HANDLE ACTUAL UPLOAD TO GCP AND GET URL WHEN BUCKET IS SET UP
-                // imageUrl = await uploadFileToBucket(req.file, 'bills'); 
-                imageUrl = `https://fakeurl.com/${req.file.filename}`; // Placeholder URL
+                imageUrl = await uploadFileToBucket(req.file, 'bills');
             }
             const bill = await Bill.findByPk(id);
             if (!bill) {
                 return res.status(404).json({ message: 'Bill not found' });
-            }
+            }        
             //old payment records for same bill
             const paymentsAgainstBill = await PaidBill.findAll({ where: { bill_id: id } });
             let totalAmountReceived = 0; // Sum of previous payments
