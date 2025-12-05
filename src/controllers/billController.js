@@ -8,8 +8,16 @@ const { Op } = require('sequelize');
 
 const billController = {
     getAllBills: async (req, res) => {
-        try {          
-            const bills = await Bill.findAll();
+        try {
+            const user = req.user;
+            let bills;
+            if (user.userType.access_level < 2) {
+                console.log('Fetching bills added by user:', user.id);
+                bills = await Bill.findAll({where: { added_by: user.id }});
+            } else {
+                console.log('Fetching all bills for admin user');
+                bills = await Bill.findAll();
+            }
             return res.status(200).json({ bills });
         } catch (error) {
             return res.status(500).json({ message: 'Failed to retrieve users', error: error.message });
@@ -81,6 +89,10 @@ const billController = {
                     attributes: ['id', 'name', 'description', 'amount_received', 'payment_invoice_url', 'created_at']
                 }]
             });
+
+            if(bill.added_by !== req.user.id && req.user.userType.access_level < 2) {
+                return res.status(403).json({ message: 'Insufficient permissions to view this bill' });
+            }
 
             if (!bill) return res.status(404).json({ message: 'Bill not found' });
 

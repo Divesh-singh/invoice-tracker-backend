@@ -64,7 +64,7 @@ const authController = {
       res.cookie('token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         maxAge: COOKIE_EXPIRE,
       });
 
@@ -84,7 +84,7 @@ const authController = {
     res.clearCookie('token', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     });
 
     return res.status(200).json({ message: 'Logged out successfully' });

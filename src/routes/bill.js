@@ -17,14 +17,14 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// Get all bills (protected, admin only)
-router.get('/', authenticationMiddleware, authorize(2), billController.getAllBills);
+// Get all bills - managed access based on user type
+router.get('/', authenticationMiddleware, billController.getAllBills);
 
 // Adding bill report here as its not a seprate entity yet
 router.get('/report', authenticationMiddleware, authorize(2), billController.getBillReport);
 
 // Get single bill by id (with payments)
-router.get('/:id', authenticationMiddleware, authorize(2), billController.getBillById);
+router.get('/:id', authenticationMiddleware, billController.getBillById);
 
 // Create bill 
 router.post('/', authenticationMiddleware, upload.single('image'), billController.createBill);
